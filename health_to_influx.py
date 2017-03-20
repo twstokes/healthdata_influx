@@ -46,9 +46,7 @@ def parse(export):
 
         formattedData.append(recordDict)
 
-    print formattedData
-
-    # return formattedData
+    return formattedData
 
 def _sanitize(string):
     if string is not None:
@@ -60,6 +58,7 @@ def _sanitize(string):
             .encode('ascii', 'ignore')
         )
     else:
+        # TODO - fix this
         raise
 
 def main(host, database, export):
@@ -76,6 +75,7 @@ def main(host, database, export):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Uploads HealthKit data to InfluxDB')
     parser.add_argument('dbhost', help='InfluxDB host')
+    # TODO - make sure this is optional
     parser.add_argument('database', default='health', help="InfluxDB database")
     parser.add_argument('file', help='Health data export file')
 
