@@ -1,17 +1,18 @@
 import argparse
-import dateutil
-from lxml import etree
+import xml.etree.ElementTree as ET
+from datetime import datetime, timezone
 from influxdb import InfluxDBClient
 
 
-def upload(host, data, database='health'):
-    client = InfluxDBClient(host=host, database=database, port=8086)
-    client.create_database('health')
-    client.write_points(points=data, batch_size=1000)
+def upload(host, data=[], database='health'):
+    if len(data):
+        client = InfluxDBClient(host=host, database=database, port=8086)
+        client.create_database('health')
+        client.write_points(points=data, batch_size=1000)
 
 def parse(export):
     with open(export) as f:
-        tree = etree.parse(f)
+        tree = ET.parse(f)
 
     formattedData = []
     records = tree.findall('Record')
@@ -23,12 +24,19 @@ def parse(export):
         attr = record.attrib
 
         unit = attr['unit']
-        value = attr['value']
+        value = float(attr['value'])
         date = attr['endDate']
         source = attr['sourceName']
         measurement = attr['type']
 
-        time = dateutil.parser.parse(date).strftime('%Y-%m-%dT%H:%M:%SZ')
+        # chop off prefix if detected
+        if measurement[0:24] == 'HKQuantityTypeIdentifier':
+            measurement = measurement[24:]
+
+        # parse the time string
+        parsedTime = datetime.strptime(date, '%Y-%m-%d %H:%M:%S %z')
+        # save as correct format in UTC timezone
+        time = parsedTime.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
 
         recordDict = {
             'measurement': measurement,
@@ -46,7 +54,9 @@ def parse(export):
 
         formattedData.append(recordDict)
 
+    # print(formattedData)
     return formattedData
+
 
 def main(host, export, database):
     try:

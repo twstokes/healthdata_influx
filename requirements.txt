@@ -1,2 +1,2 @@
-lxml
 influxdb
+python-dateutil
