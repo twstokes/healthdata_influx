@@ -4,7 +4,7 @@ from lxml import etree
 from influxdb import InfluxDBClient
 
 
-def upload(host, database='health', data):
+def upload(host, data, database='health'):
     client = InfluxDBClient(host=host, database=database, port=8086)
     client.create_database('health')
     client.write_points(points=data, batch_size=1000)
@@ -26,7 +26,7 @@ def parse(export):
         value = attr['value']
         date = attr['endDate']
         source = attr['sourceName']
-        measurement = _sanitize(attr['type'])
+        measurement = attr['type']
 
         time = dateutil.parser.parse(date).strftime('%Y-%m-%dT%H:%M:%SZ')
 
@@ -40,36 +40,23 @@ def parse(export):
         }
 
         if unit is not None:
-            recordDict['tags']['unit'] = _sanitize(unit)
+            recordDict['tags']['unit'] = unit
         if source is not None:
-            recordDict['tags']['source'] = _sanitize(source)
+            recordDict['tags']['source'] = source
 
         formattedData.append(recordDict)
 
     return formattedData
 
-def _sanitize(string):
-    if string is not None:
-        # for some reason it can't handle Unicode
-        # replace some known offenders and as a last resort ignore chars that would raise
-        return str(string
-            .replace(u"\u2019", "'")
-            .replace(u'\xa0', u' ')
-            .encode('ascii', 'ignore')
-        )
-    else:
-        # TODO - fix this
-        raise
-
-def main(host, database, export):
+def main(host, export, database):
     try:
         data = parse(export)
-        upload(host, database, data)
+        upload(host, data, database)
 
-        print 'Total upload success!'
+        print('Total upload success!')
     except Exception as e:
-        print 'Failure!'
-        print str(e)
+        print('Failure!')
+        print(str(e))
 
 
 if __name__ == '__main__':
@@ -81,4 +68,4 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    main(args.dbhost, args.database, args.file)
+    main(args.dbhost, args.file, args.database)
