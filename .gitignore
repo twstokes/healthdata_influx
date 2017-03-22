@@ -90,3 +90,4 @@ ENV/
 
 data/
 .DS_Store
+config.yml

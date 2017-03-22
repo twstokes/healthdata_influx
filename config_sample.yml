@@ -3,7 +3,7 @@
 
 influxdb:
   client:
-    host: sierra
+    host: localhost
     database: health
   write_points:
     batch_size: 1000
