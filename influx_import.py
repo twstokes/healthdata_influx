@@ -10,7 +10,7 @@ def upload(configPath, dataPoints=[]):
     if len(dataPoints):
         client = InfluxDBClient(**config['influxdb']['client'])
         client.create_database(config['influxdb']['client']['database'])
-        client.write_points(points=data, **config['influxdb']['write_points'])
+        client.write_points(points=dataPoints, **config['influxdb']['write_points'])
 
 """
 Loads config for this script
