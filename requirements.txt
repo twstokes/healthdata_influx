@@ -1,3 +1,2 @@
 pyyaml
 influxdb
-python-dateutil
