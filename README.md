@@ -1,10 +1,21 @@
-# health-data
-Health Data
+# healthdata_influx
+Imports Apple Health Data into InfluxDB
 
-Python 3
+### Requirements:
 
-pip install -r requirements.txt
+ * Python 3
+ * InfluxDB
 
-To Do: Query for the latest record before doing anything, to cut down on time
-See if values that end up as None are ignored in the DB or need to be filtered beforehand
+### Installation:
 
+* pip install -r requirements.txt
+* Rename config_sample.yml to config.yml
+
+### Configuration:
+
+* Edit config.yml
+
+### Usage:
+
+1. Export Health Data from iOS device
+2. `python3 ios_to_influx.py export.xml`
