@@ -8,7 +8,7 @@ Imports Apple Health Data into InfluxDB
 
 ### Installation:
 
-* pip install -r requirements.txt
+* `pip install -r requirements.txt`
 * Rename config_sample.yml to config.yml
 
 ### Configuration:
