@@ -20,7 +20,8 @@ def parseToPoints(filePath):
             point = createPoint(record)
             points.append(point)
         except ValueError:
-            print("Couldn't convert record to point - skipping.")
+            print("Couldn't convert record to point:")
+            et.dump(record)
             pass
         except:
             raise
