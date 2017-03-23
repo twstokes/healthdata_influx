@@ -1,9 +1,0 @@
-# configure with params from the docs: 
-# http://influxdb-python.readthedocs.io/en/latest/api-documentation.html#influxdbclient
-
-influxdb:
-  client:
-    host: sierra
-    database: health
-  write_points:
-    batch_size: 1000
