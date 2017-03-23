@@ -9,11 +9,11 @@ Imports Apple Health Data into InfluxDB
 ### Installation:
 
 * `pip install -r requirements.txt`
-* Rename config_sample.yml to config.yml
+* Rename `config_sample.yml` to `config.yml`
 
 ### Configuration:
 
-* Edit config.yml
+* Edit `config.yml`
 
 ### Usage:
 
