@@ -3,8 +3,8 @@ Imports Apple Health Data into InfluxDB
 
 ### Requirements:
 
- * Python 3
- * InfluxDB
+ * [Python 3](https://www.python.org/)
+ * [InfluxDB](https://www.influxdata.com/)
 
 ### Installation:
 
@@ -18,4 +18,4 @@ Imports Apple Health Data into InfluxDB
 ### Usage:
 
 1. Export Health Data from iOS device
-2. `python3 ios_to_influx.py export.xml`
+2. `python3 import.py export.xml`

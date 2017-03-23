@@ -1,6 +1,6 @@
+import db
 import sys
 import argparse
-import influx_import as importer
 import xml.etree.ElementTree as et
 from datetime import datetime, timezone
 
@@ -82,7 +82,7 @@ def parseAndUpload(configPath, exportPath):
         data = parseToPoints(exportPath)
 
         print('Uploading {0} points...'.format(len(data)))
-        importer.upload(configPath, data)
+        db.upload(configPath, data)
 
         print('Success!')
     except et.ParseError:
