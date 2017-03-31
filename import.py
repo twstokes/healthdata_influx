@@ -1,37 +1,41 @@
-import db
+"""
+Parses an Apple Health export file and imports into
+InfluxDB
+"""
 import sys
 import argparse
 import xml.etree.ElementTree as et
 from datetime import datetime, timezone
+import db
 
 
-"""
-Takes in a path to an Apple Health Data export file, returns points
-"""
-def parseToPoints(filePath):
-    with open(filePath) as f:
-        tree = et.parse(f)
+def parse_points(file_path):
+    """
+    Takes in a path to an Apple Health Data
+    export file, returns points
+    """
+    with open(file_path) as file:
+        tree = et.parse(file)
 
     points = []
     records = tree.findall('Record')
 
     for record in records:
         try:
-            point = createPoint(record)
+            point = create_point(record)
             points.append(point)
         except ValueError:
             print("Couldn't convert record to point:")
             et.dump(record)
-            pass
         except:
             raise
 
     return points
 
-"""
-Returns an InfluxDB point for a health record XML element
-"""
-def createPoint(record):
+def create_point(record):
+    """
+    Returns an InfluxDB point for a health record XML element
+    """
     attr = record.attrib
 
     unit = attr.get('unit')
@@ -45,9 +49,9 @@ def createPoint(record):
         raise ValueError
 
     # parse the time string
-    parsedTime = datetime.strptime(date, '%Y-%m-%d %H:%M:%S %z')
+    parsed_time = datetime.strptime(date, '%Y-%m-%d %H:%M:%S %z')
     # save as correct format in UTC timezone
-    time = parsedTime.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+    time = parsed_time.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
 
     # try to convert to a number
     try:
@@ -72,32 +76,33 @@ def createPoint(record):
 
     return point
 
-"""
-Takes InfluxDB configuration and Apple Health Data file paths
-Uploads to InfluxDB
-"""
-def parseAndUpload(configPath, exportPath):
+def parse_and_upload(config_path, export_path):
+    """
+    Takes InfluxDB configuration and Apple Health Data file paths
+    Uploads to InfluxDB
+    """
     try:
         print('Parsing data points...')
-        data = parseToPoints(exportPath)
+        data = parse_points(export_path)
 
         print('Uploading {0} points...'.format(len(data)))
-        db.upload(configPath, data)
+        db.upload(config_path, data)
 
         print('Success!')
     except et.ParseError:
         print('Failed to parse data export!')
-    except Exception as e:
+    except Exception as error:
         print('Failure!')
         print(sys.exc_info())
+        print(error)
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Uploads Apple Health Data to InfluxDB')
+    PARSER = argparse.ArgumentParser(description='Uploads Apple Health Data to InfluxDB')
 
-    parser.add_argument('--config_path', help='InfluxDB config file path', default='./config.yml')
-    parser.add_argument('export_path', help='Apple Health Data export file path')
+    PARSER.add_argument('--config_path', help='InfluxDB config file path', default='./config.yml')
+    PARSER.add_argument('export_path', help='Apple Health Data export file path')
 
-    args = parser.parse_args()
+    ARGS = PARSER.parse_args()
 
-    parseAndUpload(args.config_path, args.export_path)
+    parse_and_upload(ARGS.config_path, ARGS.export_path)
