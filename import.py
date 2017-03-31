@@ -17,6 +17,8 @@ def parse_points(file_path):
     with open(file_path) as file:
         tree = et.parse(file)
 
+    print("XML loaded.")
+
     points = []
     records = tree.findall('Record')
 
