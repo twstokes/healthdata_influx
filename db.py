@@ -14,16 +14,6 @@ def upload(config_path, data_points=None):
         client.create_database(config['influxdb']['client']['database'])
         client.write_points(points=data_points, **config['influxdb']['write_points'])
 
-def _create_influx_time(time):
-    """
-    Takes in a datetime object
-    Returns a datetime string InfluxDB expects, in UTC
-    """
-    # save as correct format in UTC timezone
-    converted_time = time.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
-
-    return converted_time
-
 def create_point(measurement, time, fields, tags=None):
     """Helps enforce proper InfluxDB point creation"""
 
@@ -57,6 +47,16 @@ def create_point(measurement, time, fields, tags=None):
     }
 
     return point
+
+def _create_influx_time(time):
+    """
+    Takes in a datetime object
+    Returns a datetime string InfluxDB expects, in UTC
+    """
+    # save as correct format in UTC timezone
+    converted_time = time.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+    return converted_time
 
 def _load_config(config_path):
     """Loads config for this script"""

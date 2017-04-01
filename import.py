@@ -64,14 +64,14 @@ def mung_record_to_point(record):
 
     if 'unit' in attr:
         tags['unit'] = attr['unit']
-    if 'source' in attr:
-        tags['source'] = attr['source']
+    if 'sourceName' in attr:
+        tags['source'] = attr['sourceName']
 
-    point = db.create_point(measurement, time, tags, fields)
+    point = db.create_point(measurement, time, fields, tags)
 
     return point
 
-def parse_and_upload(config_path, export_path):
+def parse_and_upload(config_path, export_path, dry_run=False):
     """
     Takes InfluxDB configuration and Apple Health Data file paths
     Uploads to InfluxDB
@@ -81,7 +81,10 @@ def parse_and_upload(config_path, export_path):
         data = parse_points(export_path)
 
         print('Uploading {0} points...'.format(len(data)))
-        db.upload(config_path, data)
+        if not dry_run:
+            db.upload(config_path, data)
+        else:
+            print('Dry run - no database changes made.')
 
         print('Success!')
     except et.ParseError:
@@ -96,8 +99,9 @@ if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(description='Uploads Apple Health Data to InfluxDB')
 
     PARSER.add_argument('--config_path', help='InfluxDB config file path', default='./config.yml')
+    PARSER.add_argument('--dry', help='Dry run - no DB changes', action='store_true', default=False)
     PARSER.add_argument('export_path', help='Apple Health Data export file path')
 
     ARGS = PARSER.parse_args()
 
-    parse_and_upload(ARGS.config_path, ARGS.export_path)
+    parse_and_upload(ARGS.config_path, ARGS.export_path, ARGS.dry)
