@@ -22,3 +22,6 @@ Visualizing InfluxDB using [Grafana](https://grafana.com/).
 
 1. Export Health Data from iOS device
 2. `python3 import.py export.xml`
+
+### Notes:
+* Does not support "Mindful Sessions"
