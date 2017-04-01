@@ -1,5 +1,5 @@
 """
-Parses an Apple Health export file 
+Parses an Apple Health export file
 and imports into InfluxDB
 """
 import sys
@@ -40,7 +40,9 @@ def mung_record_to_point(record):
     """
     attr = record.attrib
 
-    if 'endDate' not in attr or 'value' not in attr or 'type' not in attr:
+    if ('endDate' not in attr
+            or 'value' not in attr
+            or 'type' not in attr):
         raise ValueError('Failed to find all required fields.')
 
     tags = {}
