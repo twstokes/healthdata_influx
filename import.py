@@ -4,8 +4,8 @@ InfluxDB
 """
 import sys
 import argparse
+from datetime import datetime
 import xml.etree.ElementTree as et
-from datetime import datetime, timezone
 import db
 
 
@@ -24,33 +24,31 @@ def parse_points(file_path):
 
     for record in records:
         try:
-            point = create_point(record)
+            point = mung_record_to_point(record)
             points.append(point)
-        except ValueError:
-            print("Couldn't convert record to point:")
+        except ValueError as error:
+            print("Couldn't convert record to point:", error)
             et.dump(record)
         except:
             raise
 
     return points
 
-def create_point(record):
+def mung_record_to_point(record):
     """
     Returns an InfluxDB point for a health record XML element
     """
     attr = record.attrib
 
     if 'endDate' not in attr or 'value' not in attr or 'type' not in attr:
-        raise ValueError
+        raise ValueError('Failed to find all required fields.')
+
+    tags = {}
+    fields = {}
 
     value = attr['value']
     end_date = attr['endDate']
     measurement = attr['type']
-
-    # parse the time string
-    parsed_time = datetime.strptime(end_date, '%Y-%m-%d %H:%M:%S %z')
-    # save as correct format in UTC timezone
-    time = parsed_time.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
 
     try:
         # try to convert to a number
@@ -59,19 +57,17 @@ def create_point(record):
         # carry on as a string
         pass
 
-    point = {
-        'measurement': measurement,
-        'tags': {},
-        'time': time,
-        'fields': {
-            'value': value
-        }
-    }
+    # set the fields
+    fields['value'] = value
+    # convert to datetime obj
+    time = datetime.strptime(end_date, '%Y-%m-%d %H:%M:%S %z')
 
     if 'unit' in attr:
-        point['tags']['unit'] = attr['unit']
+        tags['unit'] = attr['unit']
     if 'source' in attr:
-        point['tags']['source'] = attr['source']
+        tags['source'] = attr['source']
+
+    point = db.create_point(measurement, time, tags, fields)
 
     return point
 
