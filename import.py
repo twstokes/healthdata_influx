@@ -40,23 +40,20 @@ def create_point(record):
     """
     attr = record.attrib
 
-    unit = attr.get('unit')
-    value = attr.get('value')
-    date = attr.get('endDate')
-    measurement = attr.get('type')
-    source = attr.get('sourceName')
-
-    # these values are required
-    if date is None or value is None or measurement is None:
+    if 'endDate' not in attr or 'value' not in attr or 'type' not in attr:
         raise ValueError
 
+    value = attr['value']
+    end_date = attr['endDate']
+    measurement = attr['type']
+
     # parse the time string
-    parsed_time = datetime.strptime(date, '%Y-%m-%d %H:%M:%S %z')
+    parsed_time = datetime.strptime(end_date, '%Y-%m-%d %H:%M:%S %z')
     # save as correct format in UTC timezone
     time = parsed_time.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
 
-    # try to convert to a number
     try:
+        # try to convert to a number
         value = float(value)
     except ValueError:
         # carry on as a string
@@ -71,10 +68,10 @@ def create_point(record):
         }
     }
 
-    if unit is not None:
-        point['tags']['unit'] = unit
-    if source is not None:
-        point['tags']['source'] = source
+    if 'unit' in attr:
+        point['tags']['unit'] = attr['unit']
+    if 'source' in attr:
+        point['tags']['source'] = attr['source']
 
     return point
 
