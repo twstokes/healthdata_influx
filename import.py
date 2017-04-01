@@ -1,6 +1,6 @@
 """
-Parses an Apple Health export file and imports into
-InfluxDB
+Parses an Apple Health export file 
+and imports into InfluxDB
 """
 import sys
 import argparse
