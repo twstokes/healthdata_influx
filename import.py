@@ -14,7 +14,7 @@ def parse_points(file_path):
     Takes in a path to an Apple Health Data
     export file, returns points
     """
-    with open(file_path) as file:
+    with open(file_path, encoding="utf-8") as file:
         tree = et.parse(file)
 
     print("XML loaded.")
