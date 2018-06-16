@@ -36,8 +36,8 @@ class Importer:
         Uploads to InfluxDB
         """
 
-        def create_flusher(buffer, size, records):
-            def flusher():
+        def create_flusher(buffer, size):
+            def flusher(records):
                 print("Flushing {} points to DB. Current total: {}".format(size, records))
                 self.upload(buffer[:size])
                 # clean up
@@ -51,7 +51,7 @@ class Importer:
 
                 point_buffer = []
                 total_records, success_records = (0, 0)
-                flusher = create_flusher(point_buffer, self.buffer_size, total_records)
+                flusher = create_flusher(point_buffer, self.buffer_size)
 
                 for idx, (_, record) in enumerate(context):
                     total_records += 1
@@ -64,7 +64,7 @@ class Importer:
                         output_mung_error(error, record, idx+1)
 
                     if len(point_buffer) > self.buffer_size - 1:
-                        flusher()
+                        flusher(total_records)
 
                     # memory cleanup
                     record.clear()
