@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  importer:
+    build: .
+    links:
+      - influxdb
+    volumes:
+      - ./data:/data:ro
+      - ./docker-compose/config.yml:/app/config.yml:ro
+
+  influxdb:
+    image: influxdb
+    env_file:
+      - './docker-compose/env.influxdb'
+
+  grafana:
+    image: grafana/grafana:latest
+    volumes:
+      - ./docker-compose/grafana_datasources:/etc/grafana/provisioning/datasources
+      - ./docker-compose/grafana_dashboard_providers:/etc/grafana/provisioning/dashboards
+      - ./docker-compose/grafana_dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "3000:3000"
+    env_file:
+      - './docker-compose/env.grafana'
+    links:
+      - influxdb

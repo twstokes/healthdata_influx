@@ -98,7 +98,7 @@ def parse_and_upload(config_path, export_path, dry_run=False):
 
 
 if __name__ == '__main__':
-    PARSER = argparse.ArgumentParser(description='Uploads Apple Health Data to InfluxDB')
+    PARSER = argparse.ArgumentParser(description='Imports Apple Health Data to InfluxDB')
 
     PARSER.add_argument('--config_path', help='InfluxDB config file path', default='./config.yml')
     PARSER.add_argument('--dry', help='Dry run - no DB changes', action='store_true', default=False)
