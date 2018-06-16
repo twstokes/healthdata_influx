@@ -83,7 +83,5 @@ This is the easiest way to get up and running quickly. This will spin up the imp
 
 `docker run -v $PWD/data:/data:ro -v $PWD/config.yml:/app/config.yml:ro twstokes/healthdata_influx`
 
--
-
 ## Todo / Notes:
 * Does not support "Mindful Sessions"
