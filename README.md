@@ -28,7 +28,11 @@ This is the easiest way to get up and running quickly. This will spin up the imp
 
 #### Running:
 
-`docker-compose up` (add `-d` to run in daemon mode)
+1. `docker-compose up` (add `-d` to run in daemon mode)
+2. Access Grafana in your web browser: [http://localhost:3000](http://localhost:3000)
+
+Username: `admin`
+Password: `admin`
 
 #### Refreshing data:
 
