@@ -2,101 +2,135 @@
 Parses an Apple Health export file
 and imports into InfluxDB
 """
-import db
 import sys
 import argparse
 from datetime import datetime
-import xml.etree.ElementTree as et
+from lxml import etree
+from db import InfluxDBUploader
 
-def parse_points(file_path):
+class Importer:
     """
-    Takes in a path to an Apple Health Data
-    export file, returns points
+    Importer parses an Apple Health XML file
+    and uploads Records to a database
     """
-    with open(file_path, encoding="utf-8") as file:
-        tree = et.parse(file)
+    def __init__(self, uploader, dry=False, buffer_size=50000):
+        if dry:
+            print('Dry run - no database changes will be made.')
 
-    print("XML loaded.")
+        self.dry = dry
+        self.uploader = uploader
+        # how many records to Buffer before flushing to the database
+        # adjusting this will affect memory consumption
+        self.buffer_size = buffer_size
 
-    points = []
-    records = tree.findall('Record')
+    def upload(self, points):
+        """
+        Sends points to the uploader if not a dry run.
+        """
+        if not self.dry:
+            self.uploader.upload(points)
+    
+    def parse_and_upload(self, export_path):
+        """
+        Takes InfluxDB configuration and Apple Health Data file paths
+        Uploads to InfluxDB
+        """
 
-    print("Found all records.")
+        def create_flusher(buffer, size, records):
+            def flusher():
+                print("Flushing {} points to DB. Current total: {}".format(size, records))
+                self.upload(buffer[:size])
+                # clean up
+                del buffer[:size]
+            return flusher
 
-    for record in records:
         try:
-            point = mung_record_to_point(record)
-            points.append(point)
-        except ValueError as error:
-            print("Couldn't convert record to point:", error)
-            et.dump(record)
-        except:
-            raise
+            print('Opening export file...')
+            with open(export_path, mode='rb') as file:
+                context = self.get_record_iterator(file)
 
-    return points
+                point_buffer = []
+                total_records, success_records = (0, 0)
+                flusher = create_flusher(point_buffer, self.buffer_size, total_records)
 
-def mung_record_to_point(record):
-    """
-    Returns an InfluxDB point for a health record XML element
-    """
-    attr = record.attrib
+                for idx, (_, record) in enumerate(context):
+                    total_records += 1
 
-    if ('endDate' not in attr
-            or 'value' not in attr
-            or 'type' not in attr):
-        raise ValueError('Failed to find all required fields.')
+                    try:
+                        point = self.mung_record_to_point(record)
+                        point_buffer.append(point)
+                        success_records += 1
+                    except Exception as error:
+                        output_mung_error(error, record, idx+1)
 
-    tags = {}
-    fields = {}
+                    if len(point_buffer) > self.buffer_size - 1:
+                        flusher()
 
-    value = attr['value']
-    end_date = attr['endDate']
-    measurement = attr['type']
+                    # memory cleanup
+                    record.clear()
+                    while record.getprevious() is not None:
+                        del record.getparent()[0]
 
-    try:
-        # try to convert to a number
-        value = float(value)
-    except ValueError:
-        # carry on as a string
-        pass
+                # upload the rest
+                self.upload(point_buffer)
 
-    # set the fields
-    fields['value'] = value
-    # convert to datetime obj
-    time = datetime.strptime(end_date, '%Y-%m-%d %H:%M:%S %z')
+            print("Successful uploads: {}".format(success_records))
+            print("Total records: {}".format(total_records))
+        except Exception as error:
+            print('Failure!')
+            print(sys.exc_info())
+            print(error)
 
-    if 'unit' in attr:
-        tags['unit'] = attr['unit']
-    if 'sourceName' in attr:
-        tags['source'] = attr['sourceName']
+    def mung_record_to_point(self, record):
+        """
+        Returns an InfluxDB point for a health record XML element
+        """
+        attr = record.attrib
 
-    point = db.create_point(measurement, time, fields, tags)
+        if ('endDate' not in attr
+                or 'value' not in attr
+                or 'type' not in attr):
+            raise ValueError('Failed to find all required fields.')
 
-    return point
+        tags = {}
+        fields = {}
 
-def parse_and_upload(config_path, export_path, dry_run=False):
-    """
-    Takes InfluxDB configuration and Apple Health Data file paths
-    Uploads to InfluxDB
-    """
-    try:
-        print('Parsing data points...')
-        data = parse_points(export_path)
+        value = attr['value']
+        end_date = attr['endDate']
+        measurement = attr['type']
 
-        print('Uploading {0} points...'.format(len(data)))
-        if not dry_run:
-            db.upload(config_path, data)
-        else:
-            print('Dry run - no database changes made.')
+        try:
+            # try to convert to a number
+            value = float(value)
+        except ValueError:
+            # carry on as a string
+            pass
 
-        print('Success!')
-    except et.ParseError:
-        print('Failed to parse data export!')
-    except Exception as error:
-        print('Failure!')
-        print(sys.exc_info())
-        print(error)
+        # set the fields
+        fields['value'] = value
+        # convert to datetime obj
+        time = datetime.strptime(end_date, '%Y-%m-%d %H:%M:%S %z')
 
+        if 'unit' in attr:
+            tags['unit'] = attr['unit']
+        if 'sourceName' in attr:
+            tags['source'] = attr['sourceName']
+
+        point = self.uploader.create_point(measurement, time, fields, tags)
+
+        return point
+
+    def get_record_iterator(self, file):
+        """
+        Takes in an Apple Health Data
+        export file, returns iterator for Record elements
+        """
+        return etree.iterparse(file, events=('end',), tag='Record')
+
+def output_mung_error(error, record, index):
+    print("Couldn't convert record to point:", error)
+    print(etree.tostring(record))
+    print("Record index: {}".format(index))
 
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(description='Imports Apple Health Data to InfluxDB')
@@ -107,4 +141,14 @@ if __name__ == '__main__':
 
     ARGS = PARSER.parse_args()
 
-    parse_and_upload(ARGS.config_path, ARGS.export_path, ARGS.dry)
+    try:
+        UPLOADER = InfluxDBUploader(ARGS.config_path)
+        print('InfluxDB uploader loaded.')
+        IMPORTER = Importer(UPLOADER, ARGS.dry)
+        print('Importer loaded.')
+        IMPORTER.parse_and_upload(ARGS.export_path)
+    except FileNotFoundError:
+        print('Could not load InfluxDB configuration file!')
+    except Exception as error:
+        print('Failed to initialize InfluxDB!')
+        print(error)
