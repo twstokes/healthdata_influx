@@ -1,0 +1,29 @@
+FROM python:3
+
+WORKDIR .
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+RUN apt update && apt install -y unzip
+
+# Install Supercronic to run the job as a cronjob.
+ENV SUPERCRONIC_URL=https://github.com/aptible/supercronic/releases/download/v0.1.5/supercronic-linux-amd64 \
+    SUPERCRONIC=supercronic-linux-amd64 \
+    SUPERCRONIC_SHA1SUM=9aeb41e00cc7b71d30d33c57a2333f2c2581a201
+
+RUN curl -fsSLO "$SUPERCRONIC_URL" \
+ && echo "${SUPERCRONIC_SHA1SUM}  ${SUPERCRONIC}" | sha1sum -c - \
+ && chmod +x "$SUPERCRONIC" \
+ && mv "$SUPERCRONIC" "/usr/local/bin/${SUPERCRONIC}" \
+ && ln -s "/usr/local/bin/${SUPERCRONIC}" /usr/local/bin/supercronic
+
+COPY . .
+
+# Import on an hourly schedule.
+CMD [ "supercronic", "./cron" ]
+
+# Run command immediately, for debugging.
+#CMD [ "./import.sh" ]
+
+#CMD [ "python3", "./import.py", "export.xml" ]
