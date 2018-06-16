@@ -18,68 +18,68 @@ This is the easiest way to get up and running quickly. This will spin up the imp
 
 * [Docker](https://www.docker.com/) with [Docker Compose](https://docs.docker.com/compose/)
 
-####Installation:
+#### Installation:
 
 * Create a `data` directory at the project root and add the `export.xml` inside it
 
-####Building:
+#### Building:
 
 `docker-compose build`
 
-####Running:
+#### Running:
 
 `docker-compose up` (add `-d` to run in daemon mode)
 
-####Refreshing data:
+#### Refreshing data:
 
 1. Replace `data/export.yml` with a new version
 2. `docker-compose run importer`
 
 ## Running as a Python module or stand-alone script.
 
-####Requirements:
+#### Requirements:
 	
 * [Python 3](https://www.python.org/)
 * An accessible [InfluxDB](https://www.influxdata.com/) instance
 
-####Installation:
+#### Installation:
 
 * `pip install -r requirements.txt`
 * Rename `config_sample.yml` to `config.yml`
 
-####Configuration:
+#### Configuration:
 
 * Edit `config.yml` to match your InfluxDB settings (host, auth, etc.)
 
-####Usage:
+#### Usage:
 
 1. Export Health Data from iOS device
 2. `python3 import.py export.xml`
 
 
-####See also:
+#### See also:
 `python import.py --help`
 
 ## Running as a stand-alone Docker container
 
-####Requirements:
+#### Requirements:
 
 * [Docker](https://www.docker.com/)
 
-####Installation:
+#### Installation:
 
 * Create a `data` directory at the repo root and add the `export.xml` inside it.
  	* (note that this can be anywhere if the volume mount point on the `docker run` command is changed)
 
-####Configuration:
+#### Configuration:
 
 * Edit `config.yml` to match your InfluxDB settings (host, auth, etc.)
 
-####Building:
+#### Building:
 
 `docker build . -t twstokes/healthdata_influx`
 
-####Running (at the repo root):
+#### Running (at the repo root):
 
 `docker run -v $PWD/data:/data:ro -v $PWD/config.yml:/app/config.yml:ro twstokes/healthdata_influx`
 
