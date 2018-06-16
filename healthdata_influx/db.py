@@ -1,8 +1,7 @@
 """Loads a configuration and imports data points into InfluxDB"""
-from datetime import datetime, timezone
 import yaml
 from influxdb import InfluxDBClient
-
+from datetime import datetime, timezone
 
 def upload(config_path, data_points=None):
     """Uploads data points to InfluxDB"""

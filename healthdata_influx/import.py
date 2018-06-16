@@ -2,12 +2,11 @@
 Parses an Apple Health export file
 and imports into InfluxDB
 """
+import db
 import sys
 import argparse
 from datetime import datetime
 import xml.etree.ElementTree as et
-import db
-
 
 def parse_points(file_path):
     """
@@ -21,6 +20,8 @@ def parse_points(file_path):
 
     points = []
     records = tree.findall('Record')
+
+    print("Found all records.")
 
     for record in records:
         try:
