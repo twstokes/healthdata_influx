@@ -14,7 +14,7 @@ Visualizing InfluxDB using [Grafana](https://grafana.com/).
 
 This is the easiest way to get up and running quickly. This will spin up the importer, an InfluxDB database, and Grafana with a default dashboard ready to go.
 
-####Requirements:
+#### Requirements:
 
 * [Docker](https://www.docker.com/) with [Docker Compose](https://docs.docker.com/compose/)
 
