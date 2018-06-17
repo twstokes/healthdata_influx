@@ -91,5 +91,6 @@ ENV/
 data/
 .DS_Store
 config.yml
+!docker-compose/config.yml
 
 .vscode
