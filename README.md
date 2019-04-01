@@ -35,7 +35,7 @@ Username: `admin` Password: `admin`
 
 #### Refreshing data:
 
-1. Replace `data/export.yml` with a new version
+1. Replace `data/export.xml` with a new version
 2. `docker-compose run importer`
 
 ## Running as a Python module or stand-alone script.
