@@ -10,7 +10,7 @@ services:
       - ./docker-compose/config.yml:/app/config.yml:ro
 
   influxdb:
-    image: influxdb
+    image: influxdb:1.8
     env_file:
       - './docker-compose/env.influxdb'
 
