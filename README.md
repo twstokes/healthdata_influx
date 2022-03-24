@@ -12,6 +12,9 @@ Visualizing InfluxDB using [Grafana](https://grafana.com/).
 
 ## Running as a complete service with Docker Compose (bonus Grafana Graphs!)
 
+<details>
+<summary>Expand instructions</summary>
+	
 This is the easiest way to get up and running quickly. This will spin up the importer, an InfluxDB database, and Grafana with a default dashboard ready to go.
 
 #### Requirements:
@@ -37,8 +40,13 @@ Username: `admin` Password: `admin`
 
 1. Replace `data/export.xml` with a new version
 2. `docker-compose run importer`
+	
+</details>
 
 ## Running as a Python module or stand-alone script.
+
+<details>
+<summary>Expand instructions</summary>
 
 #### Requirements:
 	
@@ -59,11 +67,15 @@ Username: `admin` Password: `admin`
 1. Export Health Data from iOS device
 2. `python3 import.py export.xml`
 
-
 #### See also:
 `python import.py --help`
+	
+</details>
 
 ## Running as a stand-alone Docker container
+
+<details>
+<summary>Expand instructions</summary>
 
 #### Requirements:
 
@@ -86,5 +98,7 @@ Username: `admin` Password: `admin`
 
 `docker run -v $PWD/data:/data:ro -v $PWD/config.yml:/app/config.yml:ro twstokes/healthdata_influx`
 
+</details>
+
 ## Todo / Notes:
-* Does not support "Mindful Sessions"
+* Does not currently support "Mindful Sessions"
